@@ -72,3 +72,23 @@ kwadratt = [
     [1, 5, 6],
     [1, 6, 2]
 ]
+
+
+def takeOBJ(name):
+    vertices = []
+    triangles = []
+
+    with open(name, "r") as file:
+        for line in file:
+            if line.startswith("v "):
+                _, x, y, z = line.strip().split()
+                vertices.append([float(x), float(y), float(z)])
+            elif line.startswith("f "):
+                parts = line.strip().split()[1:]
+                indices = [int(p.split("/")[0]) - 1 for p in parts]
+                if len(indices) == 3:
+                    triangles.append(indices)
+                elif len(indices) > 3:
+                    for i in range(1, len(indices) - 1):
+                        triangles.append([indices[0], indices[i], indices[i+1]])
+    return vertices, triangles

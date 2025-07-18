@@ -105,13 +105,12 @@ def drawObject(pos, faces):
         pygame.draw.line(screen, color, pos[faces[i][1]], pos[faces[i][2]])
         pygame.draw.line(screen, color, pos[faces[i][2]], pos[faces[i][0]])
 
-main_cam = camra([-50, 1, 0], [0, 0, 0], 500)
-
-
-monkey = objInfo([0, 1, 0], points, triangles, [0, 0, 0])
+main_cam = camra([0, 1, 0], [0, 0, 0], 500)
+monkey_p2, monkey_t2 = takeOBJ('untitled.obj')
+monkey = objInfo([-50, 1, 0], monkey_p2, monkey_t2, [0, 50, 0])
 monkey_move = 0
-monkey2 = objInfo([-50, 1, 0], kwadratp, kwadratt, [0, 50, 0])
-monkey3 = objInfo([-50, 1, 0], kwadratp, kwadratt, [0, 50, 0])
+monkey_p, monkey_t = takeOBJ('Man.obj')
+monkey3 = objInfo([-50, 1, 0], monkey_p, monkey_t, [0, 50, 0])
 sens = 50
 
 pygame.mouse.set_visible(False)
@@ -140,18 +139,16 @@ while True:
         main_cam.position[2] += math.cos(math.radians(main_cam.rotation[1] + 90)) * 2
         main_cam.position[0] += math.sin(math.radians(main_cam.rotation[1] + 90)) * 2
 
-    main_cam.rotation[1] += (pygame.mouse.get_pos()[0] - (screen_dimensions[0] / 2)) / (screen_dimensions[0] / 2) * sens
-    main_cam.rotation[0] += (pygame.mouse.get_pos()[1] - (screen_dimensions[1] / 2)) / (screen_dimensions[1] / 2) * sens
+    main_cam.rotation[1] += ((pygame.mouse.get_pos()[0] - (screen_dimensions[0] / 2)) / (screen_dimensions[0] / 2) * sens)
+    main_cam.rotation[0] += ((pygame.mouse.get_pos()[1] - (screen_dimensions[1] / 2)) / (screen_dimensions[1] / 2) * sens)
     pygame.mouse.set_pos(screen_dimensions[0] / 2, screen_dimensions[1] / 2)
-    monkey.position[1] += math.cos(monkey_move) * 0.5
-    monkey.position[0] += math.sin(monkey_move) * 0.5
+    monkey3.position[1] += math.cos(monkey_move) * 0.5
     monkey_move += 0.05
-    monkey2.rotation[1] += 1
-    monkey2.rotation[0] += 1
-    monkey2.rotation[2] += 1
+    monkey.rotation[1] += 1
+    monkey.rotation[0] += 1
+    monkey.rotation[2] += 1
     screen.fill((0, 0, 0))
     drawObject(changePos(monkey, 10), monkey.faces)
-    drawObject(changePos(monkey2, 10), monkey2.faces)
     drawObject(changePos(monkey3, 5), monkey3.faces)
     pygame.display.flip()
     clock.tick(60)
