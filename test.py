@@ -1,5 +1,6 @@
 import math
 
+
 def generate_sphere(radius=1.0, lat_segments=10, lon_segments=20):
     vertices = []
     triangles = []

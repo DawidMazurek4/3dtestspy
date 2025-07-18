@@ -8,6 +8,27 @@ screen = pygame.display.set_mode((screen_dimensions[0], screen_dimensions[1]))
 clock = pygame.time.Clock()
 
 
+def rotatingaxisX(pos, center, rot):
+    x = (pos[0] - center[0]) + center[0]
+    y = (pos[1] - center[1]) * math.cos(math.radians(rot[0])) + -(pos[2] - center[2]) * math.sin(math.radians(rot[0])) + center[1]
+    z = (pos[1] - center[1]) * math.sin(math.radians(rot[0])) + (pos[2] - center[2]) * math.cos(math.radians(rot[0])) + center[2]
+    return [x, y, z]
+
+
+def rotatingaxisY(pos, center, rot):
+    x = (pos[0] - center[0]) * math.cos(math.radians(rot[1])) + (pos[2] - center[2]) * math.sin(math.radians(rot[1])) + center[0]
+    y = (pos[1] - center[1]) + center[1]
+    z = -(pos[0] - center[0]) * math.sin(math.radians(rot[1])) + (pos[2] - center[2]) * math.cos(math.radians(rot[1])) + center[2]
+    return [x, y, z]
+
+
+def rotatingaxisZ(pos, center, rot):
+    x = (pos[0] - center[0]) * math.cos(math.radians(rot[2])) + -(pos[1] - center[1]) * math.sin(math.radians(rot[2])) + center[0]
+    y = (pos[0] - center[0]) * math.sin(math.radians(rot[2])) + (pos[1] - center[1]) * math.cos(math.radians(rot[2])) + center[1]
+    z = (pos[2] - center[2]) + center[2]
+    return [x, y, z]
+
+
 class camra:
     def __init__(self, position, rotation, fov):
         self.position = position
@@ -23,7 +44,7 @@ class objInfo:
         self.rotation = rotation
 
 
-def changePos(object):
+def changePos(object, scale):
     points = []
     cx, cy, cz = main_cam.position
     ry = math.radians(main_cam.rotation[1])
@@ -34,28 +55,41 @@ def changePos(object):
     sin_x = math.sin(rx)
 
     for vx, vy, vz in object.vertices:
-        scale = 10
+        # w is the position of vertex with applied scale
         wx = (vx * scale) + object.position[0]
         wy = (-vy * scale) + object.position[1]
         wz = (vz * scale) + object.position[2]
 
+        # rotating over own axis 
+        wx, wy, wz = rotatingaxisX([wx, wy, wz], object.position, object.rotation)
+        wx, wy, wz = rotatingaxisY([wx, wy, wz], object.position, object.rotation)
+        wx, wy, wz = rotatingaxisZ([wx, wy, wz], object.position, object.rotation)
+
+
+        # d is the difference w and camra pos
         dx = wx - cx
         dy = wy - cy
         dz = wz - cz
 
+        
+
+        # rotating the object so it looks like the camra is rotating
         px = dx * cos_y - dz * sin_y
         pz = dx * sin_y + dz * cos_y
 
         py = dy * cos_x - pz * sin_x
         pz = dy * sin_x + pz * cos_x
 
+        
+        
+        # if pz <= 0 stop drawing and return false to rework
         if pz <= 0:
             return False
-
-        f = main_cam.fov / pz
-        screen_x = px * f + screen_dimensions[0] / 2
-        screen_y = py * f + screen_dimensions[1] / 2
-        points.append([screen_x, screen_y])
+        else:
+            f = main_cam.fov / pz
+            screen_x = px * f + screen_dimensions[0] / 2
+            screen_y = py * f + screen_dimensions[1] / 2
+            points.append([screen_x, screen_y])
 
     return points if len(points) == len(object.vertices) else False
 
@@ -71,12 +105,13 @@ def drawObject(pos, faces):
         pygame.draw.line(screen, color, pos[faces[i][1]], pos[faces[i][2]])
         pygame.draw.line(screen, color, pos[faces[i][2]], pos[faces[i][0]])
 
-main_cam = camra([0, 0, 1], [0, 0, 0], 1000)
+main_cam = camra([-50, 1, 0], [0, 0, 0], 500)
 
 
 monkey = objInfo([0, 1, 0], points, triangles, [0, 0, 0])
 monkey_move = 0
-monkey2 = objInfo([-50, 1, 0], kwadratp, kwadratt, [0, 0, 0])
+monkey2 = objInfo([-50, 1, 0], kwadratp, kwadratt, [0, 50, 0])
+monkey3 = objInfo([-50, 1, 0], kwadratp, kwadratt, [0, 50, 0])
 sens = 50
 
 pygame.mouse.set_visible(False)
@@ -111,8 +146,12 @@ while True:
     monkey.position[1] += math.cos(monkey_move) * 0.5
     monkey.position[0] += math.sin(monkey_move) * 0.5
     monkey_move += 0.05
+    monkey2.rotation[1] += 1
+    monkey2.rotation[0] += 1
+    monkey2.rotation[2] += 1
     screen.fill((0, 0, 0))
-    drawObject(changePos(monkey), monkey.faces)
-    drawObject(changePos(monkey2), monkey2.faces)
+    drawObject(changePos(monkey, 10), monkey.faces)
+    drawObject(changePos(monkey2, 10), monkey2.faces)
+    drawObject(changePos(monkey3, 5), monkey3.faces)
     pygame.display.flip()
     clock.tick(60)
