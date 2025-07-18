@@ -62,21 +62,24 @@ def changePos(object):
 
 
 def drawObject(pos, faces):
+    color = (0, 255, 0)
     if pos == False:
         return
     for i in range(len(faces)):
 
-        pygame.draw.line(screen, (255, 255, 255), pos[faces[i][0]], pos[faces[i][1]])
-        pygame.draw.line(screen, (255, 255, 255), pos[faces[i][1]], pos[faces[i][2]])
-        pygame.draw.line(screen, (255, 255, 255), pos[faces[i][2]], pos[faces[i][0]])
+        pygame.draw.line(screen, color, pos[faces[i][0]], pos[faces[i][1]])
+        pygame.draw.line(screen, color, pos[faces[i][1]], pos[faces[i][2]])
+        pygame.draw.line(screen, color, pos[faces[i][2]], pos[faces[i][0]])
 
-main_cam = camra([0, 0, 1], [0, 0, 0], 500)
-
-test_triangle = objInfo([1, 1, 1], points, triangles, [0, 0, 0])
-test_triangle2 = objInfo([5, 5, 50], points2, triangles2, [0, 0, 0])
-kwadrat = objInfo([0, 0, 0], kwadratp, kwadratt, [0, 0, 0])
+main_cam = camra([0, 0, 1], [0, 0, 0], 1000)
 
 
+monkey = objInfo([0, 1, 0], points, triangles, [0, 0, 0])
+monkey_move = 0
+monkey2 = objInfo([-50, 1, 0], kwadratp, kwadratt, [0, 0, 0])
+sens = 50
+
+pygame.mouse.set_visible(False)
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -86,34 +89,30 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
-
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]:
-       main_cam.position[2] += 1
+        main_cam.position[2] += math.cos(math.radians(main_cam.rotation[1])) * 2
+        main_cam.position[0] += math.sin(math.radians(main_cam.rotation[1])) * 2
+        main_cam.position[1] += math.sin(math.radians(main_cam.rotation[0])) * 2
     if keys[pygame.K_s]:
-        main_cam.position[2] -= 1
+        main_cam.position[2] -= math.cos(math.radians(main_cam.rotation[1])) * 2
+        main_cam.position[0] -= math.sin(math.radians(main_cam.rotation[1])) * 2
+        main_cam.position[1] -= math.sin(math.radians(main_cam.rotation[0])) * 2
     if keys[pygame.K_a]:
-        main_cam.position[0] -= 1
+        main_cam.position[2] -= math.cos(math.radians(main_cam.rotation[1] + 90)) * 2
+        main_cam.position[0] -= math.sin(math.radians(main_cam.rotation[1] + 90)) * 2
     if keys[pygame.K_d]:
-        main_cam.position[0] += 1
+        main_cam.position[2] += math.cos(math.radians(main_cam.rotation[1] + 90)) * 2
+        main_cam.position[0] += math.sin(math.radians(main_cam.rotation[1] + 90)) * 2
 
-    if keys[pygame.K_q]:
-        main_cam.position[1] += 1
-    if keys[pygame.K_e]:
-        main_cam.position[1] -= 1
-    
-    if keys[pygame.K_RIGHT]:
-        main_cam.rotation[1] += 1
-    if keys[pygame.K_LEFT]:
-        main_cam.rotation[1] -= 1
-    if keys[pygame.K_UP]:
-        main_cam.rotation[0] -= 1
-    if keys[pygame.K_DOWN]:
-        main_cam.rotation[0] += 1
-
+    main_cam.rotation[1] += (pygame.mouse.get_pos()[0] - (screen_dimensions[0] / 2)) / (screen_dimensions[0] / 2) * sens
+    main_cam.rotation[0] += (pygame.mouse.get_pos()[1] - (screen_dimensions[1] / 2)) / (screen_dimensions[1] / 2) * sens
+    pygame.mouse.set_pos(screen_dimensions[0] / 2, screen_dimensions[1] / 2)
+    monkey.position[1] += math.cos(monkey_move) * 0.5
+    monkey.position[0] += math.sin(monkey_move) * 0.5
+    monkey_move += 0.05
     screen.fill((0, 0, 0))
-    drawObject(changePos(test_triangle), test_triangle.faces)
-    drawObject(changePos(test_triangle2), test_triangle2.faces)
-    drawObject(changePos(kwadrat), kwadrat.faces)
+    drawObject(changePos(monkey), monkey.faces)
+    drawObject(changePos(monkey2), monkey2.faces)
     pygame.display.flip()
     clock.tick(60)

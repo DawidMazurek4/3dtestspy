@@ -34,7 +34,7 @@ def generate_sphere(radius=1.0, lat_segments=10, lon_segments=20):
 
 # Example usage:
 points, triangles = generate_sphere()
-points2, triangles2 = generate_sphere(lon_segments=50)
+points2, triangles2 = generate_sphere(lon_segments=1, lat_segments=1)
 
 kwadratp = [
     [-1, -1, -1],  # 0
