@@ -1,77 +1,80 @@
 import pygame
 import sys
 import math
+from test import *
 pygame.init()
-screen_width = 800
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
+screen_dimensions = [800, 800]
+screen = pygame.display.set_mode((screen_dimensions[0], screen_dimensions[1]))
 clock = pygame.time.Clock()
 
 
-def rotation_matrix_x(theta):
-    return [
-        [1, 0, 0],
-        [0, math.cos(theta), -math.sin(theta)],
-        [0, math.sin(theta),  math.cos(theta)]
-    ]
-
-
-def rotation_matrix_y(theta):
-    return [
-        [math.cos(theta), 0, math.sin(theta)],
-        [0, 1, 0],
-        [-math.sin(theta), 0, math.cos(theta)]
-    ]
-
-
-def rotation_matrix_z(theta):
-    return [
-        [math.cos(theta), -math.sin(theta), 0],
-        [math.sin(theta),  math.cos(theta), 0],
-        [0, 0, 1]
-    ]
-
-
-def multiply_matrix_vector(m, v):
-    return [
-        m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
-        m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
-        m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2],
-    ]
+class camra:
+    def __init__(self, position, rotation, fov):
+        self.position = position
+        self.rotation = rotation
+        self.fov = fov
 
 
 class objInfo:
-    def __init__(self, x, y, z, rotx=0, roty=0, rotz=0):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.rotx = rotx
-        self.roty = roty
-        self.rotz = rotz
-
-    def addpointstodraw(self, vertices=[]):
+    def __init__(self, position, vertices, faces, rotation):
+        self.position = position
         self.vertices = vertices
-
-    def drawverts(self, color, screen, scale):
-        self.newverts = []
-        for i in range(len(self.vertices)):
-            newx = ((self.vertices[i][0] * (scale + cam.z)))
-            newy = ((self.vertices[i][1] * (scale + cam.z)))
-            rotated = multiply_matrix_vector(rotation_matrix_x(math.radians(self.rotx)), [newx, newy, self.z])
-            rotated = multiply_matrix_vector(rotation_matrix_y(math.radians(self.roty)), rotated)
-            rotated = multiply_matrix_vector(rotation_matrix_z(math.radians(self.rotz)), rotated)
-            newx = rotated[0] - cam.x
-            newy = rotated[1] + cam.y
-
-            self.newverts.append([newx, newy])
-        pygame.draw.polygon(screen, (color), self.newverts)
+        self.faces = faces
+        self.rotation = rotation
 
 
-cam = objInfo(0, 0, -1)  # create a cam obj
-triangle = objInfo(0, 0, 1)  # simple triangle
-triangle.addpointstodraw([
-        [0, 1, 0], [-1, -1, 0], [1, -1, 0]
-    ])
+def changePos(object):
+    points = []
+    cx, cy, cz = main_cam.position
+    ry = math.radians(main_cam.rotation[1])
+    cos_y = math.cos(ry)
+    sin_y = math.sin(ry)
+    rx = math.radians(main_cam.rotation[0])
+    cos_x = math.cos(rx)
+    sin_x = math.sin(rx)
+
+    for vx, vy, vz in object.vertices:
+        scale = 10
+        wx = (vx * scale) + object.position[0]
+        wy = (-vy * scale) + object.position[1]
+        wz = (vz * scale) + object.position[2]
+
+        dx = wx - cx
+        dy = wy - cy
+        dz = wz - cz
+
+        px = dx * cos_y - dz * sin_y
+        pz = dx * sin_y + dz * cos_y
+
+        py = dy * cos_x - pz * sin_x
+        pz = dy * sin_x + pz * cos_x
+
+        if pz <= 0:
+            return False
+
+        f = main_cam.fov / pz
+        screen_x = px * f + screen_dimensions[0] / 2
+        screen_y = py * f + screen_dimensions[1] / 2
+        points.append([screen_x, screen_y])
+
+    return points if len(points) == len(object.vertices) else False
+
+
+
+def drawObject(pos, faces):
+    if pos == False:
+        return
+    for i in range(len(faces)):
+
+        pygame.draw.line(screen, (255, 255, 255), pos[faces[i][0]], pos[faces[i][1]])
+        pygame.draw.line(screen, (255, 255, 255), pos[faces[i][1]], pos[faces[i][2]])
+        pygame.draw.line(screen, (255, 255, 255), pos[faces[i][2]], pos[faces[i][0]])
+
+main_cam = camra([0, 0, 1], [0, 0, 0], 500)
+
+test_triangle = objInfo([1, 1, 1], points, triangles, [0, 0, 0])
+test_triangle2 = objInfo([5, 5, 50], points2, triangles2, [0, 0, 0])
+kwadrat = objInfo([0, 0, 0], kwadratp, kwadratt, [0, 0, 0])
 
 
 while True:
@@ -83,36 +86,34 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
+
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_d]:
-        cam.x += 5
-    if keys[pygame.K_a]:
-        cam.x -= 5
-    if keys[pygame.K_q]:
-        cam.y -= 5
-    if keys[pygame.K_e]:
-        cam.y += 5
     if keys[pygame.K_w]:
-        cam.z += 5
+       main_cam.position[2] += 1
     if keys[pygame.K_s]:
-        cam.z -= 5
+        main_cam.position[2] -= 1
+    if keys[pygame.K_a]:
+        main_cam.position[0] -= 1
+    if keys[pygame.K_d]:
+        main_cam.position[0] += 1
 
+    if keys[pygame.K_q]:
+        main_cam.position[1] += 1
+    if keys[pygame.K_e]:
+        main_cam.position[1] -= 1
+    
     if keys[pygame.K_RIGHT]:
-        triangle.roty += 1
+        main_cam.rotation[1] += 1
     if keys[pygame.K_LEFT]:
-        triangle.roty -= 1
-
+        main_cam.rotation[1] -= 1
     if keys[pygame.K_UP]:
-        triangle.rotx += 1
+        main_cam.rotation[0] -= 1
     if keys[pygame.K_DOWN]:
-        triangle.rotx -= 1
-
-    if keys[pygame.K_l]:
-        triangle.rotz += 1
-    if keys[pygame.K_p]:
-        triangle.rotz -= 1
+        main_cam.rotation[0] += 1
 
     screen.fill((0, 0, 0))
-    triangle.drawverts((255, 0, 0), screen, 100)
-    pygame.display.update()
+    drawObject(changePos(test_triangle), test_triangle.faces)
+    drawObject(changePos(test_triangle2), test_triangle2.faces)
+    drawObject(changePos(kwadrat), kwadrat.faces)
+    pygame.display.flip()
     clock.tick(60)
