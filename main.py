@@ -100,10 +100,11 @@ def drawObject(pos, faces):
     if pos == False:
         return
     for i in range(len(faces)):
-
-        pygame.draw.line(screen, color, pos[faces[i][0]], pos[faces[i][1]])
-        pygame.draw.line(screen, color, pos[faces[i][1]], pos[faces[i][2]])
-        pygame.draw.line(screen, color, pos[faces[i][2]], pos[faces[i][0]])
+        
+        pygame.draw.polygon(screen, color, [pos[faces[i][0]], pos[faces[i][1]], pos[faces[i][2]]])
+        # pygame.draw.line(screen, color, pos[faces[i][0]], pos[faces[i][1]])
+        # pygame.draw.line(screen, color, pos[faces[i][1]], pos[faces[i][2]])
+        # pygame.draw.line(screen, color, pos[faces[i][2]], pos[faces[i][0]])
 
 main_cam = camra([0, 1, 0], [0, 0, 0], 500)
 monkey_p2, monkey_t2 = takeOBJ('untitled.obj')
