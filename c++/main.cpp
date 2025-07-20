@@ -1,20 +1,19 @@
 #include <windows.h>
+#include "rasterizer.h"
 #include <cstdint>
 
 LRESULT CALLBACK windowprocedure(HWND, UINT, WPARAM, LPARAM);
 
-uint32_t buffer[500 * 500];
-BITMAPINFO bmi = {0};
 
+BITMAPINFO bmi = {0};
+float list[2] = {100, 50};
+float list1[2] = {300, 200};
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdshow){
-    for (int i = 0; i < 500 * 500; i++) {
-        buffer[i] = 0x00FF0000; // czerwony (0x00BBGGRR)
-    }
-    
+    drawPixel(list, list1, 0x00FF0000);
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmi.bmiHeader.biWidth = 500;
-    bmi.bmiHeader.biHeight = -500; // ujemna = normalna orientacja
+    bmi.bmiHeader.biHeight = -500;
     bmi.bmiHeader.biPlanes = 1;
     bmi.bmiHeader.biBitCount = 32;
     bmi.bmiHeader.biCompression = BI_RGB;
@@ -31,7 +30,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
         return -1;
     }
 
-    CreateWindowW(L"clasaokn", L"okno dla gitow", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 500, 500, NULL, NULL, NULL, NULL);
+    CreateWindowW(L"clasaokn", L"okno dla gitow", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, window_w, window_h, NULL, NULL, NULL, NULL);
 
     MSG msg = {0};
 
